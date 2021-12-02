@@ -1,33 +1,52 @@
-import React, {Component} from 'react';
-import { useEffect, useState } from "react"
-import { ActivityIndicator, View, FlatList } from "react-native"
+import React, { Component } from "react";
+import { useEffect, useState } from "react";
+import { Modal, Provider } from "@ant-design/react-native";
+import { View, FlatList, Text, StyleSheet } from "react-native";
+import CountryCard from "./CountryCard";
+
+const styles = StyleSheet.create({
+  center: {
+    textAlign: "center",
+    marginVertical: 10,
+  },
+});
 
 export default function List() {
-  const [countries, setCountries] = useState([])
-
+  const [countries, setCountries] = useState([]);
+  const [country, setCountry] = useState(null);
+  // const [language, setLanguage] = useState("") // pour faire le filtre
   useEffect(() => {
-    fetch('https://restcountries.com/v2/all')
-    .then(res => res.json())
-    .then(data => setCountries(data))
-  }, [])
-
-  if(countries.lenght === 0) {
-    return <ActivityIndicator size='large' color='#ef476f'/>
-  }
+    fetch("https://restcountries.com/v2/all")
+      .then((res) => res.json())
+      .then((data) => setCountries(data));
+  }, []);
 
   return (
-    <View>
-        <FlatList data={countries} render={Country} /> 
-    </View>
-  )
+    <Provider>
+      {country && (
+        <Modal
+          title="Languages"
+          transparent
+          onClose={() => setCountry(null)}
+          visible
+          closable
+        >
+          <View>
+            <FlatList data={country.languages} renderItem={Language} />
+          </View>
+        </Modal>
+      )}
+      <FlatList
+        data={countries}
+        horizontal
+        renderItem={({ item }) => (
+          <CountryCard country={item} onPress={() => setCountry(item)} />
+        )}
+      />
+    </Provider>
+  );
 }
 
-const Country = ({ item }) => {
-  return (
-    <View key={item.name}>
-      <Text>{item.name} ({item.alpha2Code}/{item.alpha3Code})</Text>
-      <Text>Capital: {item.capital}</Text>
-      <Text>Region: {item.region}</Text>
-    </View>
-  )
-}
+const Language = ({ item }) => {
+  return <Text style={styles.center}>{item.name}</Text>;
+};
